@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>گزارش پزشکی: بررسی داروی مانجارو (Mounjaro)</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts for Persian (Vazirmatn) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- 
+    <!-- Chosen Palette: Warm Medical (Stone/Teal/Rose/Amber) -->
+    <!-- Application Structure Plan: A dashboard-style SPA to guide the patient through a comprehensive medical consultation. It includes an Executive Summary (Doctor's Note), a comparative Pros/Cons section, a categorized Side Effects matrix (Short vs Long term), a data-driven expectation chart (Chart.js), and an actionable Success Plan checklist. This structure was chosen because it breaks down complex medical information into digestible, interactive segments, preventing cognitive overload while directly answering the user's specific questions regarding a 15kg weight loss goal. -->
+    <!-- Visualization & Content Choices: 
+        1. Intro/Overview: Text blocks to establish the medical persona and context.
+        2. Pros/Cons: Interactive grid cards (HTML/CSS) to clearly juxtapose benefits and drawbacks. Goal: Compare.
+        3. Side Effects: Expandable interactive accordion/tabs (Vanilla JS) to separate short-term from long-term risks, ensuring warnings are read without overwhelming the user initially. Goal: Inform/Organize.
+        4. Weight Loss Trajectory: Line Chart (Chart.js in Canvas). Goal: Change/Expectation Management. Justification: Visualizing the timeline helps the patient understand that 15kg loss is a process of months, not days. NO SVG used.
+        5. Success Plan: Interactive checklist (Vanilla JS) to promote active engagement with recommendations. Goal: Action/Organize. 
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    -->
+
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Chart Container Requirements */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 280px;
+            }
+        }
+
+        .checklist-item.done {
+            text-decoration: line-through;
+            color: #78716c; /* stone-500 */
+            background-color: #dcfce7; /* green-100 */
+            transition: all 0.3s ease;
+        }
+        
+        /* Custom Scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #14b8a6; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0f766e; 
+        }
+    </style>
+</head>
+<body class="text-stone-800 antialiased leading-relaxed">
+
+    <!-- Top Navigation / Header -->
+    <header class="bg-teal-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center py-4">
+                <div class="flex items-center gap-3 mb-4 md:mb-0">
+                    <span class="text-3xl">⚕️</span>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold">پرونده مشاوره پزشکی: مانجارو</h1>
+                        <p class="text-teal-100 text-sm">بررسی بالینی تیرزپاتاید (Tirzepatide)</p>
+                    </div>
+                </div>
+                
+                <!-- Navigation Tabs -->
+                <nav class="flex flex-wrap justify-center gap-2" id="nav-tabs">
+                    <button class="nav-btn active bg-teal-800 hover:bg-teal-900 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="overview">📋 مرور کلی</button>
+                    <button class="nav-btn bg-teal-600 hover:bg-teal-800 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="pros-cons">⚖️ مزایا و معایب</button>
+                    <button class="nav-btn bg-teal-600 hover:bg-teal-800 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="side-effects">⚠️ عوارض جانبی</button>
+                    <button class="nav-btn bg-teal-600 hover:bg-teal-800 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="trajectory">📉 نمودار پیش‌بینی</button>
+                    <button class="nav-btn bg-teal-600 hover:bg-teal-800 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="success-plan">🎯 برنامه موفقیت</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Section 1: Overview -->
+        <section id="overview" class="tab-content active">
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8 mb-6">
+                <div class="flex items-start gap-4">
+                    <div class="text-4xl">👨‍⚕️</div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-teal-800 mb-4">یادداشت پزشک: سلام به شما</h2>
+                        <p class="text-stone-600 mb-4 text-justify">
+                            سلام. خوشحالم که برای کاهش وزن خود به دنبال یک رویکرد علمی و پزشکی هستید. شما اشاره کردید که قصد دارید حدود <strong>۱۵ کیلوگرم</strong> وزن کم کنید و درباره آمپول <strong>مانجارو (Mounjaro)</strong> که این روزها در ایران بسیار محبوب شده، سوال دارید.
+                        </p>
+                        <p class="text-stone-600 mb-4 text-justify">
+                            ماده فعال این دارو <em>تیرزپاتاید</em> است. بر خلاف نسل‌های قبلی (مثل اوزمپیک یا ساکسندا) که فقط گیرنده GLP-1 را تحریک می‌کردند، مانجارو همزمان دو هورمون گوارشی (GLP-1 و GIP) را تقلید می‌کند. این ترکیب باعث کاهش شدید اشتها، احساس سیری زودرس و تنظیم ترشح انسولین می‌شود. برای هدف ۱۵ کیلویی شما، این دارو می‌تواند یک ابزار فوق‌العاده قدرتمند باشد، <strong>اما یک معجزه مستقل نیست.</strong> استفاده از آن نیاز به آگاهی کامل از مزایا، معایب و عوارض دارد.
+                        </p>
+                        <div class="bg-amber-50 border-r-4 border-amber-500 p-4 mt-6 rounded-l-md text-amber-800 text-sm">
+                            <strong>توجه:</strong> این پلتفرم صرفاً جهت ارائه اطلاعات جامع و تعاملی پزشکی طراحی شده است. پیش از شروع مصرف هرگونه داروی تزریقی، انجام آزمایشات کامل خون (تیروئید، کبد، کلیه، قند) و ویزیت حضوری توسط پزشک غدد الزامی است.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mt-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                    <div class="text-3xl mb-2">🧬</div>
+                    <h3 class="font-bold text-stone-800">مکانیسم اثر دوگانه</h3>
+                    <p class="text-sm text-stone-500 mt-2">فعال‌سازی همزمان گیرنده‌های GIP و GLP-1 برای اثربخشی بیشتر.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                    <div class="text-3xl mb-2">💉</div>
+                    <h3 class="font-bold text-stone-800">تزریق هفتگی</h3>
+                    <p class="text-sm text-stone-500 mt-2">استفاده آسان به صورت زیرپوستی تنها یک بار در هفته.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
+                    <div class="text-3xl mb-2">📉</div>
+                    <h3 class="font-bold text-stone-800">اثربخشی بالا</h3>
+                    <p class="text-sm text-stone-500 mt-2">توانایی کاهش ۱۵ تا ۲۰ درصد از وزن کل بدن در دوره‌های طولانی.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Pros & Cons -->
+        <section id="pros-cons" class="tab-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-teal-800 mb-2">تحلیل مزایا و معایب مانجارو</h2>
+                <p class="text-stone-600">در این بخش کفه ترازوی خوبی‌ها و بدی‌های این دارو را به عنوان یک گزینه درمانی برای هدف ۱۵ کیلویی شما بررسی می‌کنیم.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Pros -->
+                <div class="bg-white rounded-xl shadow-sm border border-green-200 overflow-hidden">
+                    <div class="bg-green-50 px-6 py-4 border-b border-green-200 flex items-center gap-2">
+                        <span class="text-xl">✅</span>
+                        <h3 class="font-bold text-green-800 text-lg">خوبی‌ها (مزایا)</h3>
+                    </div>
+                    <ul class="p-6 space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-500 mt-1">✓</span>
+                            <div>
+                                <strong class="block text-stone-800">کاهش وزن بسیار چشمگیر</strong>
+                                <span class="text-sm text-stone-600">در مقایسه با سایر داروها، سریع‌ترین و بیشترین میزان چربی‌سوزی را دارد. رسیدن به کاهش ۱۵ کیلو با این دارو کاملاً واقع‌بینانه است.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-500 mt-1">✓</span>
+                            <div>
+                                <strong class="block text-stone-800">خاموش کردن "صدای غذا" در ذهن</strong>
+                                <span class="text-sm text-stone-600">ولع خوردن ریزه‌خواری و شیرینی‌جات را به شدت در مغز سرکوب می‌کند (Food Noise Reduction).</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-green-500 mt-1">✓</span>
+                            <div>
+                                <strong class="block text-stone-800">بهبود شاخص‌های متابولیک</strong>
+                                <span class="text-sm text-stone-600">تنظیم عالی قند خون، کاهش مقاومت به انسولین و بهبود پروفایل چربی خون.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Cons -->
+                <div class="bg-white rounded-xl shadow-sm border border-rose-200 overflow-hidden">
+                    <div class="bg-rose-50 px-6 py-4 border-b border-rose-200 flex items-center gap-2">
+                        <span class="text-xl">❌</span>
+                        <h3 class="font-bold text-rose-800 text-lg">بدی‌ها (معایب)</h3>
+                    </div>
+                    <ul class="p-6 space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-500 mt-1">✗</span>
+                            <div>
+                                <strong class="block text-stone-800">هزینه بسیار بالا و کمیاب بودن</strong>
+                                <span class="text-sm text-stone-600">در ایران، تهیه نسخه‌های اصلی بسیار پرهزینه است و خطر داروهای تقلبی (یخچال‌نشده یا فیک) در بازار سیاه زیاد است.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-500 mt-1">✗</span>
+                            <div>
+                                <strong class="block text-stone-800">بازگشت وزن در صورت قطع دارو</strong>
+                                <span class="text-sm text-stone-600">اگر در طول مصرف، سبک زندگی (عضله‌سازی و تغذیه) را اصلاح نکنید، با قطع دارو اشتهای قبلی بازگشته و وزن برمی‌گردد.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-500 mt-1">✗</span>
+                            <div>
+                                <strong class="block text-stone-800">تحلیل عضلانی (سارکوپنی)</strong>
+                                <span class="text-sm text-stone-600">به دلیل کاهش شدید کالری دریافتی، اگر پروتئین نخورید و ورزش نکنید، بخشی از آن ۱۵ کیلو، عضله‌های ارزشمند شما خواهد بود.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Side Effects -->
+        <section id="side-effects" class="tab-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-teal-800 mb-2">طبقه‌بندی عوارض جانبی</h2>
+                <p class="text-stone-600">هر داروی موثری عوارض دارد. این عوارض به دو دسته کوتاه مدت (شایع اما گذرا) و بلند مدت (نادر اما جدی) تقسیم می‌شوند. روی دکمه‌های زیر کلیک کنید.</p>
+            </div>
+
+            <!-- Interactivity: Toggle View -->
+            <div class="flex justify-center gap-4 mb-8">
+                <button id="btn-short-term" class="px-6 py-3 rounded-full font-bold shadow-md transition-all bg-amber-500 text-white hover:bg-amber-600">عوارض کوتاه مدت (شایع)</button>
+                <button id="btn-long-term" class="px-6 py-3 rounded-full font-bold shadow-md transition-all bg-stone-200 text-stone-600 hover:bg-stone-300">عوارض بلند مدت (جدی)</button>
+            </div>
+
+            <!-- Short Term Effects -->
+            <div id="view-short-term" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300">
+                <div class="bg-amber-50 p-5 rounded-lg border border-amber-200 text-center hover:-translate-y-1 transition-transform">
+                    <div class="text-4xl mb-3">🤢</div>
+                    <h4 class="font-bold text-amber-900 mb-2">تهوع و استفراغ</h4>
+                    <p class="text-xs text-amber-800">بسیار شایع در روزهای اول تزریق یا هنگام افزایش دوز. معمولاً با خوردن وعده‌های کوچک و آب کافی رفع می‌شود.</p>
+                </div>
+                <div class="bg-amber-50 p-5 rounded-lg border border-amber-200 text-center hover:-translate-y-1 transition-transform">
+                    <div class="text-4xl mb-3">🚽</div>
+                    <h4 class="font-bold text-amber-900 mb-2">مشکلات روده‌ای</h4>
+                    <p class="text-xs text-amber-800">اسهال یا یبوست. به دلیل کند شدن حرکات معده و روده. مصرف فیبر و مایعات ضروری است.</p>
+                </div>
+                <div class="bg-amber-50 p-5 rounded-lg border border-amber-200 text-center hover:-translate-y-1 transition-transform">
+                    <div class="text-4xl mb-3">🥱</div>
+                    <h4 class="font-bold text-amber-900 mb-2">خستگی و بی‌حالی</h4>
+                    <p class="text-xs text-amber-800">به دلیل افت شدید دریافت کالری روزانه. بدن باید به تامین انرژی از چربی‌ها عادت کند.</p>
+                </div>
+                <div class="bg-amber-50 p-5 rounded-lg border border-amber-200 text-center hover:-translate-y-1 transition-transform">
+                    <div class="text-4xl mb-3">🔥</div>
+                    <h4 class="font-bold text-amber-900 mb-2">سوزش سر دل و رفلاکس</h4>
+                    <p class="text-xs text-amber-800">غذا مدت بیشتری در معده می‌ماند. پرخوری حتی به مقدار کم می‌تواند باعث رفلاکس اسید شود.</p>
+                </div>
+            </div>
+
+            <!-- Long Term Effects -->
+            <div id="view-long-term" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-6 transition-all duration-300">
+                <div class="bg-rose-50 p-6 rounded-xl border border-rose-200 flex gap-4 items-start">
+                    <div class="text-3xl">🦋</div>
+                    <div>
+                        <h4 class="font-bold text-rose-900 mb-2">خطر تومورهای تیروئید (هشدار جعبه سیاه)</h4>
+                        <p class="text-sm text-rose-800 text-justify">در مطالعات حیوانی باعث ایجاد تومورهای سلول C تیروئید شده است. اگر خودتان یا در خانواده سابقه <em>کارسینوم مدولاری تیروئید (MTC)</em> یا سندرم نئوپلازی غدد درون‌ریز متعدد (MEN 2) دارید، مصرف مانجارو <strong>مطلقاً ممنوع</strong> است.</p>
+                    </div>
+                </div>
+                <div class="bg-rose-50 p-6 rounded-xl border border-rose-200 flex gap-4 items-start">
+                    <div class="text-3xl">🫀</div>
+                    <div>
+                        <h4 class="font-bold text-rose-900 mb-2">پانکراتیت (التهاب لوزالمعده)</h4>
+                        <p class="text-sm text-rose-800 text-justify">یکی از عوارض نادر اما بسیار دردناک و خطرناک. در صورت احساس درد شدید و مداوم در ناحیه شکم که به کمر می‌زند (با یا بدون استفراغ)، باید دارو فورا قطع و به اورژانس مراجعه شود.</p>
+                    </div>
+                </div>
+                <div class="bg-rose-50 p-6 rounded-xl border border-rose-200 flex gap-4 items-start">
+                    <div class="text-3xl">🪨</div>
+                    <div>
+                        <h4 class="font-bold text-rose-900 mb-2">بیماری‌های کیسه صفرا</h4>
+                        <p class="text-sm text-rose-800 text-justify">کاهش وزن سریع باعث تشکیل سنگ کیسه صفرا می‌شود. آمار جراحی کیسه صفرا در مصرف‌کنندگان طولانی مدت داروهای کاهش وزن بالاتر است.</p>
+                    </div>
+                </div>
+                <div class="bg-rose-50 p-6 rounded-xl border border-rose-200 flex gap-4 items-start">
+                    <div class="text-3xl">🛑</div>
+                    <div>
+                        <h4 class="font-bold text-rose-900 mb-2">فلج معده (گاستروپارزی)</h4>
+                        <p class="text-sm text-rose-800 text-justify">از آنجا که دارو حرکت معده را کند می‌کند، در موارد نادر ممکن است این توقف حرکتی دائمی یا بسیار طولانی شود که منجر به استفراغ مزمن و نیاز به مداخلات پزشکی جدی دارد.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Trajectory Chart -->
+        <section id="trajectory" class="tab-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-teal-800 mb-2">مسیر پیش‌بینی شده: رسیدن به هدف ۱۵- کیلو</h2>
+                <p class="text-stone-600">کاهش وزن سالم با مانجارو یک شبه اتفاق نمی‌افتد. نمودار زیر نشان می‌دهد که با دوزبندی صحیح و رعایت رژیم، به طور متوسط چه مسیری را طی ۶ ماه آینده طی خواهید کرد (فرض: وزن اولیه حدود ۸۵ الی ۹۰ کیلوگرم).</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <!-- Required Chart Container -->
+                <div class="chart-container">
+                    <canvas id="weightLossChart"></canvas>
+                </div>
+                
+                <div class="mt-6 flex flex-wrap gap-4 justify-center text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-teal-500"></span>
+                        <span class="text-stone-700">مسیر ایده‌آل (با دارو + ورزش + پروتئین)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-rose-400"></span>
+                        <span class="text-stone-700">دارو به تنهایی (احتمال از دست دادن عضله)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Success Plan -->
+        <section id="success-plan" class="tab-content">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-teal-800 mb-2">نسخه پزشک: بهترین تأثیر و لاغری ماندگار</h2>
+                <p class="text-stone-600">شما پرسیدید "چه کارهایی بکنم که بهتر تاثیر بگیرم؟". بزرگترین اشتباه بیماران این است که فکر می‌کنند دارو جایگزین تلاش است. برای اینکه از ۱۵ کیلو وزن کم شده، چربی بسوزد نه عضله، لیست زیر را تعاملی بخوانید و روی مواردی که متعهد به انجامش هستید کلیک کنید:</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8">
+                <h3 class="font-bold text-lg text-teal-900 mb-4 border-b pb-2">📋 چک‌لیست تعهدات بیمار در دوره درمان:</h3>
+                
+                <div class="space-y-3" id="checklist">
+                    <!-- JS will populate interactive checklist here -->
+                </div>
+                
+                <div class="mt-8 p-4 bg-teal-50 rounded-lg border border-teal-100 flex items-center justify-between">
+                    <div class="text-teal-800 font-medium text-sm md:text-base">
+                        آمادگی شما برای شروع درمان: <span id="readiness-score" class="font-bold text-teal-600 text-lg">0%</span>
+                    </div>
+                    <div class="w-1/2 bg-stone-200 rounded-full h-2.5 rtl:flip">
+                        <div id="readiness-bar" class="bg-teal-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-800 text-stone-400 py-6 mt-12 text-center text-sm">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>این یک سند شبیه‌سازی شده تعاملی است و جایگزین توصیه، تشخیص یا درمان پزشکی حرفه‌ای نمی‌باشد.</p>
+            <p class="mt-2">طراحی شده برای تحلیل داده‌ها و اطلاعات پزشکی جهت استفاده بهینه کاربر.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Tab Navigation Logic
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active from all
+                    navButtons.forEach(b => {
+                        b.classList.remove('active', 'bg-teal-800');
+                        b.classList.add('bg-teal-600');
+                    });
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Add active to clicked
+                    btn.classList.add('active', 'bg-teal-800');
+                    btn.classList.remove('bg-teal-600');
+                    const targetId = btn.getAttribute('data-target');
+                    document.getElementById(targetId).classList.add('active');
+
+                    // If trajectory tab is clicked and chart isn't rendered yet, render it
+                    if (targetId === 'trajectory' && !chartRendered) {
+                        initChart();
+                        chartRendered = true;
+                    }
+                });
+            });
+
+            // 2. Side Effects Toggle Logic
+            const btnShort = document.getElementById('btn-short-term');
+            const btnLong = document.getElementById('btn-long-term');
+            const viewShort = document.getElementById('view-short-term');
+            const viewLong = document.getElementById('view-long-term');
+
+            btnShort.addEventListener('click', () => {
+                btnShort.classList.replace('bg-stone-200', 'bg-amber-500');
+                btnShort.classList.replace('text-stone-600', 'text-white');
+                
+                btnLong.classList.replace('bg-rose-600', 'bg-stone-200');
+                btnLong.classList.replace('text-white', 'text-stone-600');
+
+                viewShort.classList.remove('hidden');
+                viewLong.classList.add('hidden');
+            });
+
+            btnLong.addEventListener('click', () => {
+                btnLong.classList.replace('bg-stone-200', 'bg-rose-600');
+                btnLong.classList.replace('text-stone-600', 'text-white');
+                
+                btnShort.classList.replace('bg-amber-500', 'bg-stone-200');
+                btnShort.classList.replace('text-white', 'text-stone-600');
+
+                viewLong.classList.remove('hidden');
+                viewShort.classList.add('hidden');
+            });
+
+            // 3. Chart.js Initialization
+            let chartRendered = false;
+            
+            function initChart() {
+                const ctx = document.getElementById('weightLossChart').getContext('2d');
+                
+                // Styling defaults for RTL and Font
+                Chart.defaults.font.family = "'Vazirmatn', sans-serif";
+                Chart.defaults.color = '#57534e'; // stone-600
+                
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['هفته ۰', 'ماه ۱', 'ماه ۲', 'ماه ۳', 'ماه ۴', 'ماه ۵', 'ماه ۶ (پایان)'],
+                        datasets: [
+                            {
+                                label: 'کاهش وزن با رژیم و ورزش (کیلوگرم)',
+                                data: [0, -3.5, -6.5, -9.5, -12, -13.5, -15],
+                                borderColor: '#14b8a6', // teal-500
+                                backgroundColor: 'rgba(20, 184, 166, 0.2)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#0f766e',
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'دارو بدون تغییر سبک زندگی (کیلوگرم)',
+                                data: [0, -2.5, -4.5, -6.5, -8, -9, -9.5],
+                                borderColor: '#fb7185', // rose-400
+                                backgroundColor: 'transparent',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                pointBackgroundColor: '#e11d48',
+                                pointRadius: 4,
+                                fill: false,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false, // Required to fit the chart-container height
+                        interaction: {
+                            mode: 'index',
+                            intersect: false,
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                rtl: true,
+                                labels: {
+                                    font: { family: "'Vazirmatn', sans-serif", size: 13 }
+                                }
+                            },
+                            tooltip: {
+                                rtl: true,
+                                titleFont: { family: "'Vazirmatn', sans-serif", size: 14 },
+                                bodyFont: { family: "'Vazirmatn', sans-serif", size: 13 },
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) { label += ': '; }
+                                        if (context.parsed.y !== null) {
+                                            label += context.parsed.y + ' کیلو';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'تغییرات وزن (کیلوگرم)',
+                                    font: { size: 12 }
+                                },
+                                min: -18,
+                                max: 2
+                            },
+                            x: {
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 4. Success Plan Interactive Checklist
+            const checklistItems = [
+                { id: 1, icon: '🥩', title: 'مصرف پروتئین بالا', desc: 'تعهد می‌دهم روزانه ۱.۲ تا ۱.۵ گرم به ازای هر کیلو از وزن بدنم پروتئین (تخم مرغ، مرغ، ماهی، گوشت) مصرف کنم تا در حین کاهش وزن، عضلاتم را از دست ندهم (سارکوپنی رخ ندهد).' },
+                { id: 2, icon: '🏋️‍♂️', title: 'تمرینات قدرتی', desc: 'تعهد می‌دهم حداقل هفته‌ای ۲ الی ۳ جلسه تمرین با وزنه یا وزن بدن (مثل شنا، اسکات) انجام دهم. این کلید اصلی حفظ متابولیسم است.' },
+                { id: 3, icon: '💧', title: 'آبرسانی پیوسته', desc: 'دارو باعث کاهش احساس تشنگی می‌شود. تعهد می‌دهم روزانه حداقل ۸-۱۰ لیوان آب بنوشم. این کار از یبوست و تهوع به شدت جلوگیری می‌کند.' },
+                { id: 4, icon: '🍽️', title: 'مدیریت حجم وعده‌ها', desc: 'دارو معده را کند می‌کند. تعهد می‌دهم به محض احساس اولین سیگنال‌های سیری، غذا خوردن را متوقف کنم تا دچار رفلاکس و استفراغ نشوم.' },
+                { id: 5, icon: '🩺', title: 'نظارت پزشکی', desc: 'تعهد می‌دهم دارو را خودسرانه دوزبندی نکنم، حتماً از دوز پایین (۲.۵ میلی‌گرم) شروع کنم و ماهانه زیر نظر پزشک دوز را تغییر دهم.' }
+            ];
+
+            const checklistContainer = document.getElementById('checklist');
+            const readinessScoreEl = document.getElementById('readiness-score');
+            const readinessBarEl = document.getElementById('readiness-bar');
+            let completedItems = 0;
+
+            // Render Checklist
+            checklistItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'checklist-item p-4 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50 flex items-start gap-4 transition-colors';
+                div.innerHTML = `
+                    <div class="text-2xl mt-1">${item.icon}</div>
+                    <div class="flex-1">
+                        <h4 class="font-bold mb-1 select-none">${item.title}</h4>
+                        <p class="text-sm select-none">${item.desc}</p>
+                    </div>
+                    <div class="checkbox-ui w-6 h-6 rounded border-2 border-teal-500 flex items-center justify-center mt-2 flex-shrink-0">
+                        <span class="text-teal-600 hidden opacity-0 transition-opacity">✔</span>
+                    </div>
+                `;
+                
+                div.addEventListener('click', function() {
+                    this.classList.toggle('done');
+                    const checkMark = this.querySelector('.checkbox-ui span');
+                    const boxUI = this.querySelector('.checkbox-ui');
+
+                    if (this.classList.contains('done')) {
+                        completedItems++;
+                        checkMark.classList.remove('hidden');
+                        setTimeout(() => checkMark.classList.remove('opacity-0'), 10);
+                        boxUI.classList.add('bg-teal-100');
+                    } else {
+                        completedItems--;
+                        checkMark.classList.add('opacity-0');
+                        setTimeout(() => checkMark.classList.add('hidden'), 300);
+                        boxUI.classList.remove('bg-teal-100');
+                    }
+                    updateReadiness();
+                });
+                
+                checklistContainer.appendChild(div);
+            });
+
+            function updateReadiness() {
+                const percentage = Math.round((completedItems / checklistItems.length) * 100);
+                readinessScoreEl.innerText = `${percentage}٪`;
+                readinessBarEl.style.width = `${percentage}%`;
+                
+                if(percentage === 100) {
+                    readinessScoreEl.classList.add('text-green-600');
+                    readinessScoreEl.classList.remove('text-teal-600');
+                    readinessBarEl.classList.replace('bg-teal-600', 'bg-green-500');
+                } else {
+                    readinessScoreEl.classList.remove('text-green-600');
+                    readinessScoreEl.classList.add('text-teal-600');
+                    readinessBarEl.classList.replace('bg-green-500', 'bg-teal-600');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
