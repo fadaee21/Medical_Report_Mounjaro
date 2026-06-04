@@ -16,39 +16,62 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
-    <!-- 
-    <!-- Chosen Palette: Warm Medical (Stone/Teal/Rose/Amber) -->
-    <!-- Application Structure Plan: A dashboard-style SPA to guide the patient through a comprehensive medical consultation. It includes an Executive Summary (Doctor's Note), a comparative Pros/Cons section, a categorized Side Effects matrix (Short vs Long term), a data-driven expectation chart (Chart.js), and an actionable Success Plan checklist. This structure was chosen because it breaks down complex medical information into digestible, interactive segments, preventing cognitive overload while directly answering the user's specific questions regarding a 15kg weight loss goal. -->
-    <!-- Visualization & Content Choices: 
-        1. Intro/Overview: Text blocks to establish the medical persona and context.
-        2. Pros/Cons: Interactive grid cards (HTML/CSS) to clearly juxtapose benefits and drawbacks. Goal: Compare.
-        3. Side Effects: Expandable interactive accordion/tabs (Vanilla JS) to separate short-term from long-term risks, ensuring warnings are read without overwhelming the user initially. Goal: Inform/Organize.
-        4. Weight Loss Trajectory: Line Chart (Chart.js in Canvas). Goal: Change/Expectation Management. Justification: Visualizing the timeline helps the patient understand that 15kg loss is a process of months, not days. NO SVG used.
-        5. Success Plan: Interactive checklist (Vanilla JS) to promote active engagement with recommendations. Goal: Action/Organize. 
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
-
     <style>
+        * { box-sizing: border-box; }
+        
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background-color: #f5f5f4; /* stone-100 */
+            background: linear-gradient(135deg, #f0fdfa 0%, #f5f5f4 50%, #fef3c7 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
         }
         
+        /* Animated background blobs */
+        .bg-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            z-index: -1;
+            animation: blobFloat 20s ease-in-out infinite;
+        }
+        .blob-1 { width: 400px; height: 400px; background: #14b8a6; top: -100px; right: -100px; }
+        .blob-2 { width: 300px; height: 300px; background: #f59e0b; bottom: -50px; left: -50px; animation-delay: -7s; }
+        .blob-3 { width: 350px; height: 350px; background: #fb7185; top: 50%; left: 50%; animation-delay: -14s; }
+        
+        @keyframes blobFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+        }
+
+        /* Glassmorphism cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        .glass-card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Tab content animations */
         .tab-content {
             display: none;
-            animation: fadeIn 0.4s ease-in-out;
+            animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .tab-content.active {
             display: block;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Chart Container Requirements */
+        /* Chart Container */
         .chart-container {
             position: relative;
             width: 100%;
@@ -61,166 +84,413 @@
         
         @media (max-width: 768px) {
             .chart-container {
-                height: 280px;
+                height: 260px;
             }
         }
 
-        .checklist-item.done {
+        /* Checklist animations */
+        .checklist-item {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .checklist-item:hover {
+            transform: translateX(-4px);
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.15);
+        }
+        .checklist-item.done {            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            border-color: #86efac;
+            transform: translateX(0);
+        }
+        .checklist-item.done h4 {
             text-decoration: line-through;
-            color: #78716c; /* stone-500 */
-            background-color: #dcfce7; /* green-100 */
-            transition: all 0.3s ease;
+            color: #166534;
         }
         
-        /* Custom Scrollbar for a cleaner look */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f5f5f4; 
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb {
-            background: #14b8a6; 
-            border-radius: 4px;
+            background: linear-gradient(180deg, #14b8a6, #0f766e);
+            border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #0f766e; 
+            background: linear-gradient(180deg, #0f766e, #115e59);
+        }
+
+        /* Mobile Navigation */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+        .menu-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .menu-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Gradient text */
+        .gradient-text {
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 50%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Pulse animation for icons */
+        .icon-pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Floating button */
+        .fab-progress {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 40;
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .fab-progress { bottom: 16px; left: 16px; }
+        }
+
+        /* Confetti */
+        .confetti-piece {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            z-index: 9999;
+            pointer-events: none;
+            animation: confettiFall 3s ease-out forwards;
+        }
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Side effect cards */
+        .side-effect-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .side-effect-card:hover {
+            transform: translateY(-4px) scale(1.02);
+        }
+
+        /* Hero section */
+        .hero-gradient {
+            background: linear-gradient(135deg, #0f766e 0%, #0d9488 40%, #14b8a6 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 20% 50%, rgba(245, 158, 11, 0.2) 0%, transparent 50%),                        radial-gradient(circle at 80% 80%, rgba(251, 113, 133, 0.15) 0%, transparent 50%);
+        }
+
+        /* Nav button styles */
+        .nav-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+        .nav-btn.active {
+            background: linear-gradient(135deg, #115e59 0%, #0f766e 100%) !important;
+            box-shadow: 0 4px 12px rgba(15, 118, 110, 0.4);
+        }
+
+        /* Stat card hover */
+        .stat-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(20, 184, 166, 0.2);
+        }
+        .stat-card:hover .stat-icon {
+            transform: rotate(10deg) scale(1.2);
+        }
+        .stat-icon {
+            transition: transform 0.4s ease;
+        }
+
+        /* Toggle button styles */
+        .toggle-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .toggle-btn.active-short {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+            transform: scale(1.05);        }
+        .toggle-btn.active-long {
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+            box-shadow: 0 8px 20px rgba(225, 29, 72, 0.4);
+            transform: scale(1.05);
+        }
+
+        /* Pros/Cons card animations */
+        .pros-card, .cons-card {
+            transition: all 0.4s ease;
+        }
+        .pros-card:hover { transform: translateY(-4px); }
+        .cons-card:hover { transform: translateY(-4px); }
+
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+
+        /* Loading shimmer */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* Badge styles */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .hero-title { font-size: 1.5rem !important; }
+            .hero-subtitle { font-size: 0.875rem !important; }
+            .section-title { font-size: 1.25rem !important; }
+        }
+
+        /* Print styles */
+        @media print {
+            .bg-blob, .fab-progress, nav { display: none !important; }
+            body { background: white; }
         }
     </style>
 </head>
 <body class="text-stone-800 antialiased leading-relaxed">
+    <!-- Animated Background Blobs -->
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
 
     <!-- Top Navigation / Header -->
-    <header class="bg-teal-700 text-white shadow-lg sticky top-0 z-50">
+    <header class="hero-gradient text-white shadow-2xl sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center py-4">
-                <div class="flex items-center gap-3 mb-4 md:mb-0">
-                    <span class="text-3xl">⚕️</span>
+            <div class="flex justify-between items-center py-3 md:py-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 md:w-14 md:h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+                        <span class="text-2xl md:text-3xl">⚕️</span>
+                    </div>
                     <div>
-                        <h1 class="text-xl md:text-2xl font-bold">پرونده مشاوره پزشکی: مانجارو</h1>
-                        <p class="text-teal-100 text-sm">بررسی بالینی تیرزپاتاید (Tirzepatide)</p>
+                        <h1 class="text-base md:text-xl lg:text-2xl font-bold hero-title">پرونده مشاوره پزشکی</h1>
+                        <p class="text-teal-100 text-xs md:text-sm hero-subtitle">بررسی بالینی مانجارو (Mounjaro)</p>
                     </div>
                 </div>
                 
-                <!-- Navigation Tabs -->
-                <nav class="flex flex-wrap justify-center gap-2" id="nav-tabs">
-                    <button class="nav-btn active bg-teal-800 hover:bg-teal-900 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="overview">📋 مرور کلی</button>
-                    <button class="nav-btn bg-teal-600 hover:bg-teal-800 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="pros-cons">⚖️ مزایا و معایب</button>
-                    <button class="nav-btn bg-teal-600 hover:bg-teal-800 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="side-effects">⚠️ عوارض جانبی</button>
-                    <button class="nav-btn bg-teal-600 hover:bg-teal-800 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="trajectory">📉 نمودار پیش‌بینی</button>
-                    <button class="nav-btn bg-teal-600 hover:bg-teal-800 px-4 py-2 rounded-md text-sm font-medium transition-colors" data-target="success-plan">🎯 برنامه موفقیت</button>
+                <!-- Desktop Navigation -->
+                <nav class="hidden lg:flex flex-wrap gap-2" id="nav-tabs">
+                    <button class="nav-btn active px-4 py-2 rounded-xl text-sm font-medium" data-target="overview">📋 مرور کلی</button>
+                    <button class="nav-btn px-4 py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20" data-target="pros-cons">⚖️ مزایا و معایب</button>
+                    <button class="nav-btn px-4 py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20" data-target="side-effects">⚠️ عوارض</button>
+                    <button class="nav-btn px-4 py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20" data-target="trajectory">📉 نمودار</button>
+                    <button class="nav-btn px-4 py-2 rounded-xl text-sm font-medium bg-white/10 hover:bg-white/20" data-target="success-plan">🎯 برنامه</button>
                 </nav>
+
+                <!-- Mobile Hamburger -->
+                <button id="mobile-menu-btn" class="lg:hidden w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center hover:bg-white/30 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="menu-overlay" class="menu-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"></div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 h-full w-72 bg-gradient-to-b from-teal-800 to-teal-900 shadow-2xl z-50 lg:hidden">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-white font-bold text-lg">منوی ناوبری</h3>
+                    <button id="close-menu-btn" class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30">
+                        ✕
+                    </button>
+                </div>
+                <nav class="flex flex-col gap-3" id="mobile-nav-tabs">                    <button class="mobile-nav-btn active text-right px-4 py-3 rounded-xl text-base font-medium bg-white/20 text-white" data-target="overview">📋 مرور کلی</button>
+                    <button class="mobile-nav-btn text-right px-4 py-3 rounded-xl text-base font-medium bg-white/10 text-white hover:bg-white/20" data-target="pros-cons">⚖️ مزایا و معایب</button>
+                    <button class="mobile-nav-btn text-right px-4 py-3 rounded-xl text-base font-medium bg-white/10 text-white hover:bg-white/20" data-target="side-effects">⚠️ عوارض جانبی</button>
+                    <button class="mobile-nav-btn text-right px-4 py-3 rounded-xl text-base font-medium bg-white/10 text-white hover:bg-white/20" data-target="trajectory">📉 نمودار پیش‌بینی</button>
+                    <button class="mobile-nav-btn text-right px-4 py-3 rounded-xl text-base font-medium bg-white/10 text-white hover:bg-white/20" data-target="success-plan">🎯 برنامه موفقیت</button>
+                </nav>
+                <div class="mt-8 p-4 bg-white/10 rounded-xl">
+                    <p class="text-teal-100 text-xs">این گزارش صرفاً جنبه آموزشی دارد و جایگزین توصیه پزشک نیست.</p>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content Area -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         
         <!-- Section 1: Overview -->
         <section id="overview" class="tab-content active">
-            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8 mb-6">
-                <div class="flex items-start gap-4">
-                    <div class="text-4xl">👨‍⚕️</div>
-                    <div>
-                        <h2 class="text-2xl font-bold text-teal-800 mb-4">یادداشت پزشک: سلام به شما</h2>
-                        <p class="text-stone-600 mb-4 text-justify">
-                            سلام. خوشحالم که برای کاهش وزن خود به دنبال یک رویکرد علمی و پزشکی هستید. شما اشاره کردید که قصد دارید حدود <strong>۱۵ کیلوگرم</strong> وزن کم کنید و درباره آمپول <strong>مانجارو (Mounjaro)</strong> که این روزها در ایران بسیار محبوب شده، سوال دارید.
+            <!-- Hero Card -->
+            <div class="glass-card rounded-3xl p-6 md:p-8 mb-6 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-32 h-32 bg-teal-500/10 rounded-full -translate-x-16 -translate-y-16"></div>
+                <div class="absolute bottom-0 right-0 w-40 h-40 bg-amber-500/10 rounded-full translate-x-20 translate-y-20"></div>
+                
+                <div class="relative flex flex-col md:flex-row items-start gap-4 md:gap-6">
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-teal-500 to-teal-700 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 icon-pulse">
+                        <span class="text-3xl md:text-4xl">👨‍⚕️</span>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex flex-wrap items-center gap-2 mb-3">
+                            <h2 class="text-xl md:text-2xl lg:text-3xl font-bold gradient-text">یادداشت پزشک</h2>
+                            <span class="badge bg-teal-100 text-teal-800">مشاوره تخصصی</span>
+                        </div>
+                        <p class="text-stone-600 mb-4 text-justify text-sm md:text-base">
+                            سلام. خوشحالم که برای کاهش وزن خود به دنبال یک رویکرد علمی و پزشکی هستید. شما اشاره کردید که قصد دارید حدود <strong class="text-teal-700">۱۵ کیلوگرم</strong> وزن کم کنید و درباره آمپول <strong class="text-teal-700">مانجارو (Mounjaro)</strong> سوال دارید.
                         </p>
-                        <p class="text-stone-600 mb-4 text-justify">
-                            ماده فعال این دارو <em>تیرزپاتاید</em> است. بر خلاف نسل‌های قبلی (مثل اوزمپیک یا ساکسندا) که فقط گیرنده GLP-1 را تحریک می‌کردند، مانجارو همزمان دو هورمون گوارشی (GLP-1 و GIP) را تقلید می‌کند. این ترکیب باعث کاهش شدید اشتها، احساس سیری زودرس و تنظیم ترشح انسولین می‌شود. برای هدف ۱۵ کیلویی شما، این دارو می‌تواند یک ابزار فوق‌العاده قدرتمند باشد، <strong>اما یک معجزه مستقل نیست.</strong> استفاده از آن نیاز به آگاهی کامل از مزایا، معایب و عوارض دارد.
+                        <p class="text-stone-600 mb-4 text-justify text-sm md:text-base">
+                            ماده فعال این دارو <em>تیرزپاتاید</em> است. بر خلاف نسل‌های قبلی (مثل اوزمپیک یا ساکسندا) که فقط گیرنده GLP-1 را تحریک می‌کردند، مانجارو همزمان دو هورمون گوارشی (GLP-1 و GIP) را تقلید می‌کند. این ترکیب باعث کاهش شدید اشتها، احساس سیری زودرس و تنظیم ترشح انسولین می‌شود. برای هدف ۱۵ کیلویی شما، این دارو می‌تواند یک ابزار فوق‌العاده قدرتمند باشد، <strong>اما یک معجزه مستقل نیست.</strong>
                         </p>
-                        <div class="bg-amber-50 border-r-4 border-amber-500 p-4 mt-6 rounded-l-md text-amber-800 text-sm">
-                            <strong>توجه:</strong> این پلتفرم صرفاً جهت ارائه اطلاعات جامع و تعاملی پزشکی طراحی شده است. پیش از شروع مصرف هرگونه داروی تزریقی، انجام آزمایشات کامل خون (تیروئید، کبد، کلیه، قند) و ویزیت حضوری توسط پزشک غدد الزامی است.
+                        <div class="bg-gradient-to-l from-amber-50 to-amber-100/50 border-r-4 border-amber-500 p-4 mt-4 rounded-2xl text-amber-900 text-sm flex items-start gap-3">
+                            <span class="text-xl flex-shrink-0">⚠️</span>
+                            <div>
+                                <strong class="block mb-1">توجه مهم:</strong>
+                                پیش از شروع مصرف هرگونه داروی تزریقی، انجام آزمایشات کامل خون و ویزیت حضوری توسط پزشک غدد الزامی است.
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mt-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
-                    <div class="text-3xl mb-2">🧬</div>
-                    <h3 class="font-bold text-stone-800">مکانیسم اثر دوگانه</h3>
-                    <p class="text-sm text-stone-500 mt-2">فعال‌سازی همزمان گیرنده‌های GIP و GLP-1 برای اثربخشی بیشتر.</p>
+            <!-- Stats Grid -->            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 mt-8">
+                <div class="stat-card glass-card p-6 rounded-2xl text-center cursor-default">
+                    <div class="stat-icon text-4xl md:text-5xl mb-3 inline-block">🧬</div>
+                    <h3 class="font-bold text-stone-800 text-base md:text-lg">مکانیسم دوگانه</h3>
+                    <p class="text-xs md:text-sm text-stone-500 mt-2">فعال‌سازی همزمان GIP و GLP-1</p>
+                    <div class="mt-3 h-1 bg-gradient-to-l from-teal-500 to-teal-300 rounded-full"></div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
-                    <div class="text-3xl mb-2">💉</div>
-                    <h3 class="font-bold text-stone-800">تزریق هفتگی</h3>
-                    <p class="text-sm text-stone-500 mt-2">استفاده آسان به صورت زیرپوستی تنها یک بار در هفته.</p>
+                <div class="stat-card glass-card p-6 rounded-2xl text-center cursor-default">
+                    <div class="stat-icon text-4xl md:text-5xl mb-3 inline-block">💉</div>
+                    <h3 class="font-bold text-stone-800 text-base md:text-lg">تزریق هفتگی</h3>
+                    <p class="text-xs md:text-sm text-stone-500 mt-2">فقط یک بار در هفته، زیرپوستی</p>
+                    <div class="mt-3 h-1 bg-gradient-to-l from-amber-500 to-amber-300 rounded-full"></div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-100">
-                    <div class="text-3xl mb-2">📉</div>
-                    <h3 class="font-bold text-stone-800">اثربخشی بالا</h3>
-                    <p class="text-sm text-stone-500 mt-2">توانایی کاهش ۱۵ تا ۲۰ درصد از وزن کل بدن در دوره‌های طولانی.</p>
+                <div class="stat-card glass-card p-6 rounded-2xl text-center cursor-default">
+                    <div class="stat-icon text-4xl md:text-5xl mb-3 inline-block">📉</div>
+                    <h3 class="font-bold text-stone-800 text-base md:text-lg">اثربخشی بالا</h3>
+                    <p class="text-xs md:text-sm text-stone-500 mt-2">کاهش ۱۵ تا ۲۰٪ وزن بدن</p>
+                    <div class="mt-3 h-1 bg-gradient-to-l from-rose-500 to-rose-300 rounded-full"></div>
                 </div>
             </div>
         </section>
 
         <!-- Section 2: Pros & Cons -->
         <section id="pros-cons" class="tab-content">
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold text-teal-800 mb-2">تحلیل مزایا و معایب مانجارو</h2>
-                <p class="text-stone-600">در این بخش کفه ترازوی خوبی‌ها و بدی‌های این دارو را به عنوان یک گزینه درمانی برای هدف ۱۵ کیلویی شما بررسی می‌کنیم.</p>
+            <div class="mb-6 text-center md:text-right">
+                <h2 class="section-title text-xl md:text-2xl lg:text-3xl font-bold gradient-text mb-2">⚖️ تحلیل مزایا و معایب</h2>
+                <p class="text-stone-600 text-sm md:text-base">کفه ترازوی خوبی‌ها و بدی‌های این دارو برای هدف ۱۵ کیلویی شما</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 <!-- Pros -->
-                <div class="bg-white rounded-xl shadow-sm border border-green-200 overflow-hidden">
-                    <div class="bg-green-50 px-6 py-4 border-b border-green-200 flex items-center gap-2">
-                        <span class="text-xl">✅</span>
+                <div class="pros-card glass-card rounded-3xl overflow-hidden border-r-4 border-green-500">
+                    <div class="bg-gradient-to-l from-green-50 to-emerald-50 px-6 py-4 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center shadow-md">
+                            <span class="text-xl">✅</span>
+                        </div>
                         <h3 class="font-bold text-green-800 text-lg">خوبی‌ها (مزایا)</h3>
                     </div>
-                    <ul class="p-6 space-y-4">
-                        <li class="flex items-start gap-3">
-                            <span class="text-green-500 mt-1">✓</span>
+                    <ul class="p-5 md:p-6 space-y-4">
+                        <li class="flex items-start gap-3 p-3 rounded-xl hover:bg-green-50/50 transition-colors">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-green-600 font-bold">✓</span>
+                            </div>
                             <div>
-                                <strong class="block text-stone-800">کاهش وزن بسیار چشمگیر</strong>
-                                <span class="text-sm text-stone-600">در مقایسه با سایر داروها، سریع‌ترین و بیشترین میزان چربی‌سوزی را دارد. رسیدن به کاهش ۱۵ کیلو با این دارو کاملاً واقع‌بینانه است.</span>
+                                <strong class="block text-stone-800 mb-1">کاهش وزن بسیار چشمگیر</strong>
+                                <span class="text-sm text-stone-600">سریع‌ترین و بیشترین میزان چربی‌سوزی در مقایسه با سایر داروها.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-green-500 mt-1">✓</span>
+                        <li class="flex items-start gap-3 p-3 rounded-xl hover:bg-green-50/50 transition-colors">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">                                <span class="text-green-600 font-bold">✓</span>
+                            </div>
                             <div>
-                                <strong class="block text-stone-800">خاموش کردن "صدای غذا" در ذهن</strong>
-                                <span class="text-sm text-stone-600">ولع خوردن ریزه‌خواری و شیرینی‌جات را به شدت در مغز سرکوب می‌کند (Food Noise Reduction).</span>
+                                <strong class="block text-stone-800 mb-1">خاموش کردن "صدای غذا"</strong>
+                                <span class="text-sm text-stone-600">سرکوب شدید ولع خوردن ریزه‌خواری و شیرینی‌جات (Food Noise Reduction).</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-green-500 mt-1">✓</span>
+                        <li class="flex items-start gap-3 p-3 rounded-xl hover:bg-green-50/50 transition-colors">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-green-600 font-bold">✓</span>
+                            </div>
                             <div>
-                                <strong class="block text-stone-800">بهبود شاخص‌های متابولیک</strong>
-                                <span class="text-sm text-stone-600">تنظیم عالی قند خون، کاهش مقاومت به انسولین و بهبود پروفایل چربی خون.</span>
+                                <strong class="block text-stone-800 mb-1">بهبود شاخص‌های متابولیک</strong>
+                                <span class="text-sm text-stone-600">تنظیم قند خون، کاهش مقاومت به انسولین و بهبود چربی خون.</span>
                             </div>
                         </li>
                     </ul>
                 </div>
 
                 <!-- Cons -->
-                <div class="bg-white rounded-xl shadow-sm border border-rose-200 overflow-hidden">
-                    <div class="bg-rose-50 px-6 py-4 border-b border-rose-200 flex items-center gap-2">
-                        <span class="text-xl">❌</span>
+                <div class="cons-card glass-card rounded-3xl overflow-hidden border-r-4 border-rose-500">
+                    <div class="bg-gradient-to-l from-rose-50 to-pink-50 px-6 py-4 flex items-center gap-3">
+                        <div class="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center shadow-md">
+                            <span class="text-xl">❌</span>
+                        </div>
                         <h3 class="font-bold text-rose-800 text-lg">بدی‌ها (معایب)</h3>
                     </div>
-                    <ul class="p-6 space-y-4">
-                        <li class="flex items-start gap-3">
-                            <span class="text-rose-500 mt-1">✗</span>
+                    <ul class="p-5 md:p-6 space-y-4">
+                        <li class="flex items-start gap-3 p-3 rounded-xl hover:bg-rose-50/50 transition-colors">
+                            <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-rose-600 font-bold">✗</span>
+                            </div>
                             <div>
-                                <strong class="block text-stone-800">هزینه بسیار بالا و کمیاب بودن</strong>
-                                <span class="text-sm text-stone-600">در ایران، تهیه نسخه‌های اصلی بسیار پرهزینه است و خطر داروهای تقلبی (یخچال‌نشده یا فیک) در بازار سیاه زیاد است.</span>
+                                <strong class="block text-stone-800 mb-1">هزینه بالا و کمیاب بودن</strong>
+                                <span class="text-sm text-stone-600">نسخه‌های اصلی پرهزینه‌اند و خطر داروهای تقلبی در بازار سیاه زیاد است.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-rose-500 mt-1">✗</span>
+                        <li class="flex items-start gap-3 p-3 rounded-xl hover:bg-rose-50/50 transition-colors">
+                            <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-rose-600 font-bold">✗</span>
+                            </div>
                             <div>
-                                <strong class="block text-stone-800">بازگشت وزن در صورت قطع دارو</strong>
-                                <span class="text-sm text-stone-600">اگر در طول مصرف، سبک زندگی (عضله‌سازی و تغذیه) را اصلاح نکنید، با قطع دارو اشتهای قبلی بازگشته و وزن برمی‌گردد.</span>
+                                <strong class="block text-stone-800 mb-1">بازگشت وزن در صورت قطع</strong>
+                                <span class="text-sm text-stone-600">بدون اصلاح سبک زندگی، با قطع دارو وزن برمی‌گردد.</span>
                             </div>
                         </li>
-                        <li class="flex items-start gap-3">
-                            <span class="text-rose-500 mt-1">✗</span>
-                            <div>
-                                <strong class="block text-stone-800">تحلیل عضلانی (سارکوپنی)</strong>
-                                <span class="text-sm text-stone-600">به دلیل کاهش شدید کالری دریافتی، اگر پروتئین نخورید و ورزش نکنید، بخشی از آن ۱۵ کیلو، عضله‌های ارزشمند شما خواهد بود.</span>
+                        <li class="flex items-start gap-3 p-3 rounded-xl hover:bg-rose-50/50 transition-colors">
+                            <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span class="text-rose-600 font-bold">✗</span>
+                            </div>                            <div>
+                                <strong class="block text-stone-800 mb-1">تحلیل عضلانی (سارکوپنی)</strong>
+                                <span class="text-sm text-stone-600">بدون پروتئین و ورزش، بخشی از کاهش وزن از عضله خواهد بود.</span>
                             </div>
                         </li>
                     </ul>
@@ -230,95 +500,112 @@
 
         <!-- Section 3: Side Effects -->
         <section id="side-effects" class="tab-content">
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold text-teal-800 mb-2">طبقه‌بندی عوارض جانبی</h2>
-                <p class="text-stone-600">هر داروی موثری عوارض دارد. این عوارض به دو دسته کوتاه مدت (شایع اما گذرا) و بلند مدت (نادر اما جدی) تقسیم می‌شوند. روی دکمه‌های زیر کلیک کنید.</p>
+            <div class="mb-6 text-center md:text-right">
+                <h2 class="section-title text-xl md:text-2xl lg:text-3xl font-bold gradient-text mb-2">⚠️ طبقه‌بندی عوارض جانبی</h2>
+                <p class="text-stone-600 text-sm md:text-base">عوارض به دو دسته کوتاه مدت (شایع اما گذرا) و بلند مدت (نادر اما جدی) تقسیم می‌شوند.</p>
             </div>
 
-            <!-- Interactivity: Toggle View -->
-            <div class="flex justify-center gap-4 mb-8">
-                <button id="btn-short-term" class="px-6 py-3 rounded-full font-bold shadow-md transition-all bg-amber-500 text-white hover:bg-amber-600">عوارض کوتاه مدت (شایع)</button>
-                <button id="btn-long-term" class="px-6 py-3 rounded-full font-bold shadow-md transition-all bg-stone-200 text-stone-600 hover:bg-stone-300">عوارض بلند مدت (جدی)</button>
+            <!-- Toggle Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mb-8">
+                <button id="btn-short-term" class="toggle-btn active-short px-6 py-3 rounded-2xl font-bold shadow-lg text-white text-sm md:text-base">
+                    ⏱️ عوارض کوتاه مدت (شایع)
+                </button>
+                <button id="btn-long-term" class="toggle-btn px-6 py-3 rounded-2xl font-bold shadow-lg bg-stone-200 text-stone-600 text-sm md:text-base">
+                    📅 عوارض بلند مدت (جدی)
+                </button>
             </div>
 
             <!-- Short Term Effects -->
             <div id="view-short-term" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300">
-                <div class="bg-amber-50 p-5 rounded-lg border border-amber-200 text-center hover:-translate-y-1 transition-transform">
-                    <div class="text-4xl mb-3">🤢</div>
-                    <h4 class="font-bold text-amber-900 mb-2">تهوع و استفراغ</h4>
-                    <p class="text-xs text-amber-800">بسیار شایع در روزهای اول تزریق یا هنگام افزایش دوز. معمولاً با خوردن وعده‌های کوچک و آب کافی رفع می‌شود.</p>
+                <div class="side-effect-card bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border border-amber-200 text-center">
+                    <div class="text-4xl md:text-5xl mb-3">🤢</div>
+                    <h4 class="font-bold text-amber-900 mb-2 text-sm md:text-base">تهوع و استفراغ</h4>
+                    <p class="text-xs text-amber-800">شایع در روزهای اول یا هنگام افزایش دوز. با وعده‌های کوچک و آب کافی رفع می‌شود.</p>
+                    <div class="mt-3 badge bg-amber-200 text-amber-900 mx-auto">شایع</div>
                 </div>
-                <div class="bg-amber-50 p-5 rounded-lg border border-amber-200 text-center hover:-translate-y-1 transition-transform">
-                    <div class="text-4xl mb-3">🚽</div>
-                    <h4 class="font-bold text-amber-900 mb-2">مشکلات روده‌ای</h4>
-                    <p class="text-xs text-amber-800">اسهال یا یبوست. به دلیل کند شدن حرکات معده و روده. مصرف فیبر و مایعات ضروری است.</p>
+                <div class="side-effect-card bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border border-amber-200 text-center">
+                    <div class="text-4xl md:text-5xl mb-3">🚽</div>
+                    <h4 class="font-bold text-amber-900 mb-2 text-sm md:text-base">مشکلات روده‌ای</h4>
+                    <p class="text-xs text-amber-800">اسهال یا یبوست به دلیل کند شدن حرکات روده. مصرف فیبر و مایعات ضروری است.</p>
+                    <div class="mt-3 badge bg-amber-200 text-amber-900 mx-auto">شایع</div>
                 </div>
-                <div class="bg-amber-50 p-5 rounded-lg border border-amber-200 text-center hover:-translate-y-1 transition-transform">
-                    <div class="text-4xl mb-3">🥱</div>
-                    <h4 class="font-bold text-amber-900 mb-2">خستگی و بی‌حالی</h4>
-                    <p class="text-xs text-amber-800">به دلیل افت شدید دریافت کالری روزانه. بدن باید به تامین انرژی از چربی‌ها عادت کند.</p>
+                <div class="side-effect-card bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border border-amber-200 text-center">
+                    <div class="text-4xl md:text-5xl mb-3">🥱</div>
+                    <h4 class="font-bold text-amber-900 mb-2 text-sm md:text-base">خستگی و بی‌حالی</h4>
+                    <p class="text-xs text-amber-800">به دلیل افت شدید کالری دریافتی. بدن باید به تامین انرژی از چربی عادت کند.</p>
+                    <div class="mt-3 badge bg-amber-200 text-amber-900 mx-auto">متوسط</div>
                 </div>
-                <div class="bg-amber-50 p-5 rounded-lg border border-amber-200 text-center hover:-translate-y-1 transition-transform">
-                    <div class="text-4xl mb-3">🔥</div>
-                    <h4 class="font-bold text-amber-900 mb-2">سوزش سر دل و رفلاکس</h4>
-                    <p class="text-xs text-amber-800">غذا مدت بیشتری در معده می‌ماند. پرخوری حتی به مقدار کم می‌تواند باعث رفلاکس اسید شود.</p>
+                <div class="side-effect-card bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-2xl border border-amber-200 text-center">
+                    <div class="text-4xl md:text-5xl mb-3">🔥</div>
+                    <h4 class="font-bold text-amber-900 mb-2 text-sm md:text-base">سوزش سر دل</h4>                    <p class="text-xs text-amber-800">غذا مدت بیشتری در معده می‌ماند. پرخوری باعث رفلاکس اسید می‌شود.</p>
+                    <div class="mt-3 badge bg-amber-200 text-amber-900 mx-auto">متوسط</div>
                 </div>
             </div>
 
             <!-- Long Term Effects -->
-            <div id="view-long-term" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-6 transition-all duration-300">
-                <div class="bg-rose-50 p-6 rounded-xl border border-rose-200 flex gap-4 items-start">
-                    <div class="text-3xl">🦋</div>
+            <div id="view-long-term" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 transition-all duration-300">
+                <div class="side-effect-card bg-gradient-to-br from-rose-50 to-pink-50 p-5 md:p-6 rounded-2xl border border-rose-200 flex gap-4 items-start">
+                    <div class="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <span class="text-2xl md:text-3xl">🦋</span>
+                    </div>
                     <div>
-                        <h4 class="font-bold text-rose-900 mb-2">خطر تومورهای تیروئید (هشدار جعبه سیاه)</h4>
-                        <p class="text-sm text-rose-800 text-justify">در مطالعات حیوانی باعث ایجاد تومورهای سلول C تیروئید شده است. اگر خودتان یا در خانواده سابقه <em>کارسینوم مدولاری تیروئید (MTC)</em> یا سندرم نئوپلازی غدد درون‌ریز متعدد (MEN 2) دارید، مصرف مانجارو <strong>مطلقاً ممنوع</strong> است.</p>
+                        <h4 class="font-bold text-rose-900 mb-2 text-sm md:text-base">خطر تومورهای تیروئید</h4>
+                        <span class="badge bg-red-100 text-red-800 mb-2">هشدار جعبه سیاه</span>
+                        <p class="text-xs md:text-sm text-rose-800 text-justify">در مطالعات حیوانی باعث تومور سلول C تیروئید شده. اگر سابقه خانوادگی <em>MTC</em> یا <em>MEN 2</em> دارید، مصرف <strong>ممنوع</strong> است.</p>
                     </div>
                 </div>
-                <div class="bg-rose-50 p-6 rounded-xl border border-rose-200 flex gap-4 items-start">
-                    <div class="text-3xl">🫀</div>
+                <div class="side-effect-card bg-gradient-to-br from-rose-50 to-pink-50 p-5 md:p-6 rounded-2xl border border-rose-200 flex gap-4 items-start">
+                    <div class="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <span class="text-2xl md:text-3xl">🫀</span>
+                    </div>
                     <div>
-                        <h4 class="font-bold text-rose-900 mb-2">پانکراتیت (التهاب لوزالمعده)</h4>
-                        <p class="text-sm text-rose-800 text-justify">یکی از عوارض نادر اما بسیار دردناک و خطرناک. در صورت احساس درد شدید و مداوم در ناحیه شکم که به کمر می‌زند (با یا بدون استفراغ)، باید دارو فورا قطع و به اورژانس مراجعه شود.</p>
+                        <h4 class="font-bold text-rose-900 mb-2 text-sm md:text-base">پانکراتیت (التهاب لوزالمعده)</h4>
+                        <span class="badge bg-red-100 text-red-800 mb-2">نادر اما جدی</span>
+                        <p class="text-xs md:text-sm text-rose-800 text-justify">درد شدید شکمی که به کمر می‌زند. در صورت بروز، دارو فورا قطع و به اورژانس مراجعه شود.</p>
                     </div>
                 </div>
-                <div class="bg-rose-50 p-6 rounded-xl border border-rose-200 flex gap-4 items-start">
-                    <div class="text-3xl">🪨</div>
+                <div class="side-effect-card bg-gradient-to-br from-rose-50 to-pink-50 p-5 md:p-6 rounded-2xl border border-rose-200 flex gap-4 items-start">
+                    <div class="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <span class="text-2xl md:text-3xl">🪨</span>
+                    </div>
                     <div>
-                        <h4 class="font-bold text-rose-900 mb-2">بیماری‌های کیسه صفرا</h4>
-                        <p class="text-sm text-rose-800 text-justify">کاهش وزن سریع باعث تشکیل سنگ کیسه صفرا می‌شود. آمار جراحی کیسه صفرا در مصرف‌کنندگان طولانی مدت داروهای کاهش وزن بالاتر است.</p>
+                        <h4 class="font-bold text-rose-900 mb-2 text-sm md:text-base">بیماری‌های کیسه صفرا</h4>
+                        <span class="badge bg-orange-100 text-orange-800 mb-2">متوسط</span>
+                        <p class="text-xs md:text-sm text-rose-800 text-justify">کاهش وزن سریع باعث تشکیل سنگ کیسه صفرا می‌شود. آمار جراحی در مصرف‌کنندگان بالاتر است.</p>
                     </div>
                 </div>
-                <div class="bg-rose-50 p-6 rounded-xl border border-rose-200 flex gap-4 items-start">
-                    <div class="text-3xl">🛑</div>
+                <div class="side-effect-card bg-gradient-to-br from-rose-50 to-pink-50 p-5 md:p-6 rounded-2xl border border-rose-200 flex gap-4 items-start">
+                    <div class="w-14 h-14 bg-rose-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                        <span class="text-2xl md:text-3xl">🛑</span>
+                    </div>
                     <div>
-                        <h4 class="font-bold text-rose-900 mb-2">فلج معده (گاستروپارزی)</h4>
-                        <p class="text-sm text-rose-800 text-justify">از آنجا که دارو حرکت معده را کند می‌کند، در موارد نادر ممکن است این توقف حرکتی دائمی یا بسیار طولانی شود که منجر به استفراغ مزمن و نیاز به مداخلات پزشکی جدی دارد.</p>
+                        <h4 class="font-bold text-rose-900 mb-2 text-sm md:text-base">فلج معده (گاستروپارزی)</h4>
+                        <span class="badge bg-red-100 text-red-800 mb-2">نادر</span>
+                        <p class="text-xs md:text-sm text-rose-800 text-justify">توقف حرکتی معده که منجر به استفراغ مزمن و نیاز به مداخلات پزشکی جدی می‌شود.</p>
                     </div>
                 </div>
             </div>
         </section>
-
         <!-- Section 4: Trajectory Chart -->
         <section id="trajectory" class="tab-content">
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold text-teal-800 mb-2">مسیر پیش‌بینی شده: رسیدن به هدف ۱۵- کیلو</h2>
-                <p class="text-stone-600">کاهش وزن سالم با مانجارو یک شبه اتفاق نمی‌افتد. نمودار زیر نشان می‌دهد که با دوزبندی صحیح و رعایت رژیم، به طور متوسط چه مسیری را طی ۶ ماه آینده طی خواهید کرد (فرض: وزن اولیه حدود ۸۵ الی ۹۰ کیلوگرم).</p>
+            <div class="mb-6 text-center md:text-right">
+                <h2 class="section-title text-xl md:text-2xl lg:text-3xl font-bold gradient-text mb-2">📉 مسیر پیش‌بینی شده</h2>
+                <p class="text-stone-600 text-sm md:text-base">رسیدن به هدف ۱۵ کیلوگرم طی ۶ ماه آینده (فرض: وزن اولیه ۸۵-۹۰ کیلوگرم)</p>
             </div>
 
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
-                <!-- Required Chart Container -->
+            <div class="glass-card p-4 md:p-6 rounded-3xl">
                 <div class="chart-container">
                     <canvas id="weightLossChart"></canvas>
                 </div>
                 
-                <div class="mt-6 flex flex-wrap gap-4 justify-center text-sm">
-                    <div class="flex items-center gap-2">
+                <div class="mt-6 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center text-xs md:text-sm">
+                    <div class="flex items-center gap-2 bg-teal-50 px-4 py-2 rounded-full">
                         <span class="w-3 h-3 rounded-full bg-teal-500"></span>
-                        <span class="text-stone-700">مسیر ایده‌آل (با دارو + ورزش + پروتئین)</span>
+                        <span class="text-stone-700 font-medium">مسیر ایده‌آل (دارو + ورزش + پروتئین)</span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 bg-rose-50 px-4 py-2 rounded-full">
                         <span class="w-3 h-3 rounded-full bg-rose-400"></span>
-                        <span class="text-stone-700">دارو به تنهایی (احتمال از دست دادن عضله)</span>
+                        <span class="text-stone-700 font-medium">دارو به تنهایی (احتمال از دست دادن عضله)</span>
                     </div>
                 </div>
             </div>
@@ -326,36 +613,55 @@
 
         <!-- Section 5: Success Plan -->
         <section id="success-plan" class="tab-content">
-            <div class="mb-6">
-                <h2 class="text-2xl font-bold text-teal-800 mb-2">نسخه پزشک: بهترین تأثیر و لاغری ماندگار</h2>
-                <p class="text-stone-600">شما پرسیدید "چه کارهایی بکنم که بهتر تاثیر بگیرم؟". بزرگترین اشتباه بیماران این است که فکر می‌کنند دارو جایگزین تلاش است. برای اینکه از ۱۵ کیلو وزن کم شده، چربی بسوزد نه عضله، لیست زیر را تعاملی بخوانید و روی مواردی که متعهد به انجامش هستید کلیک کنید:</p>
+            <div class="mb-6 text-center md:text-right">
+                <h2 class="section-title text-xl md:text-2xl lg:text-3xl font-bold gradient-text mb-2">🎯 نسخه پزشک: لاغری ماندگار</h2>
+                <p class="text-stone-600 text-sm md:text-base">برای اینکه از ۱۵ کیلو وزن کم شده، چربی بسوزد نه عضله، روی مواردی که متعهد هستید کلیک کنید:</p>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 md:p-8">
-                <h3 class="font-bold text-lg text-teal-900 mb-4 border-b pb-2">📋 چک‌لیست تعهدات بیمار در دوره درمان:</h3>
+            <div class="glass-card rounded-3xl p-5 md:p-8">
+                <h3 class="font-bold text-base md:text-lg text-teal-900 mb-4 pb-3 border-b border-teal-100 flex items-center gap-2">
+                    <span>📋</span> چک‌لیست تعهدات بیمار در دوره درمان
+                </h3>
                 
-                <div class="space-y-3" id="checklist">
-                    <!-- JS will populate interactive checklist here -->
-                </div>
+                <div class="space-y-3" id="checklist"></div>
                 
-                <div class="mt-8 p-4 bg-teal-50 rounded-lg border border-teal-100 flex items-center justify-between">
-                    <div class="text-teal-800 font-medium text-sm md:text-base">
-                        آمادگی شما برای شروع درمان: <span id="readiness-score" class="font-bold text-teal-600 text-lg">0%</span>
+                <div class="mt-8 p-4 md:p-5 bg-gradient-to-l from-teal-50 to-emerald-50 rounded-2xl border border-teal-100">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
+                        <div class="text-teal-800 font-medium text-sm md:text-base">
+                            🏆 آمادگی شما برای شروع درمان: 
+                            <span id="readiness-score" class="font-bold text-teal-600 text-lg">0٪</span>
+                        </div>
+                        <div class="text-xs text-stone-500" id="progress-text">0 از 5 مورد</div>
                     </div>
-                    <div class="w-1/2 bg-stone-200 rounded-full h-2.5 rtl:flip">
-                        <div id="readiness-bar" class="bg-teal-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
+                    <div class="w-full bg-stone-200 rounded-full h-3 overflow-hidden">
+                        <div id="readiness-bar" class="bg-gradient-to-l from-teal-500 to-emerald-500 h-3 rounded-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                    </div>                </div>
             </div>
         </section>
 
     </main>
 
+    <!-- Floating Progress Button -->
+    <div class="fab-progress">
+        <button id="fab-btn" class="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-teal-500 to-teal-700 rounded-full shadow-xl flex items-center justify-center text-white text-xl font-bold hover:scale-110 transition-transform" title="مشاهده پیشرفت">
+            <span id="fab-icon">🎯</span>
+        </button>
+    </div>
+
     <!-- Footer -->
-    <footer class="bg-stone-800 text-stone-400 py-6 mt-12 text-center text-sm">
+    <footer class="bg-gradient-to-br from-stone-800 to-stone-900 text-stone-400 py-8 mt-12 text-center text-xs md:text-sm">
         <div class="max-w-6xl mx-auto px-4">
-            <p>این یک سند شبیه‌سازی شده تعاملی است و جایگزین توصیه، تشخیص یا درمان پزشکی حرفه‌ای نمی‌باشد.</p>
-            <p class="mt-2">طراحی شده برای تحلیل داده‌ها و اطلاعات پزشکی جهت استفاده بهینه کاربر.</p>
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center">
+                    <span class="text-2xl">⚕️</span>
+                </div>
+                <p class="text-stone-300 font-medium">این سند صرفاً جنبه آموزشی دارد و جایگزین توصیه پزشکی نیست.</p>
+                <p class="text-stone-500">طراحی شده برای تحلیل داده‌ها و اطلاعات پزشکی جهت استفاده بهینه کاربر.</p>
+                <div class="flex gap-2 mt-2">
+                    <span class="badge bg-teal-900/50 text-teal-300">نسخه ۲.۰</span>
+                    <span class="badge bg-stone-700 text-stone-300">۱۴۰۵</span>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -363,31 +669,71 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
-            // 1. Tab Navigation Logic
-            const navButtons = document.querySelectorAll('.nav-btn');
+            // 1. Tab Navigation Logic (Desktop)
+            const navButtons = document.querySelectorAll('#nav-tabs .nav-btn');
+            const mobileNavButtons = document.querySelectorAll('#mobile-nav-tabs .mobile-nav-btn');
             const tabContents = document.querySelectorAll('.tab-content');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuOverlay = document.getElementById('menu-overlay');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const closeMenuBtn = document.getElementById('close-menu-btn');
+
+            function switchTab(targetId) {
+                navButtons.forEach(b => {
+                    b.classList.remove('active', 'bg-white/20');
+                    b.classList.add('bg-white/10');
+                });
+                mobileNavButtons.forEach(b => {
+                    b.classList.remove('active', 'bg-white/20');                    b.classList.add('bg-white/10');
+                });
+                tabContents.forEach(c => c.classList.remove('active'));
+
+                const desktopBtn = document.querySelector(`#nav-tabs .nav-btn[data-target="${targetId}"]`);
+                const mobileBtn = document.querySelector(`#mobile-nav-tabs .mobile-nav-btn[data-target="${targetId}"]`);
+                
+                if (desktopBtn) {
+                    desktopBtn.classList.add('active', 'bg-white/20');
+                    desktopBtn.classList.remove('bg-white/10');
+                }
+                if (mobileBtn) {
+                    mobileBtn.classList.add('active', 'bg-white/20');
+                    mobileBtn.classList.remove('bg-white/10');
+                }
+                
+                document.getElementById(targetId).classList.add('active');
+
+                if (targetId === 'trajectory' && !chartRendered) {
+                    initChart();
+                    chartRendered = true;
+                }
+
+                // Close mobile menu
+                mobileMenu.classList.remove('open');
+                menuOverlay.classList.remove('open');
+                
+                // Scroll to top of content
+                window.scrollTo({ top: 200, behavior: 'smooth' });
+            }
 
             navButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    // Remove active from all
-                    navButtons.forEach(b => {
-                        b.classList.remove('active', 'bg-teal-800');
-                        b.classList.add('bg-teal-600');
-                    });
-                    tabContents.forEach(content => content.classList.remove('active'));
+                btn.addEventListener('click', () => switchTab(btn.getAttribute('data-target')));
+            });
 
-                    // Add active to clicked
-                    btn.classList.add('active', 'bg-teal-800');
-                    btn.classList.remove('bg-teal-600');
-                    const targetId = btn.getAttribute('data-target');
-                    document.getElementById(targetId).classList.add('active');
+            mobileNavButtons.forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.getAttribute('data-target')));
+            });
 
-                    // If trajectory tab is clicked and chart isn't rendered yet, render it
-                    if (targetId === 'trajectory' && !chartRendered) {
-                        initChart();
-                        chartRendered = true;
-                    }
-                });
+            // Mobile Menu Toggle
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.add('open');
+                menuOverlay.classList.add('open');
+            });
+            closeMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                menuOverlay.classList.remove('open');
+            });
+            menuOverlay.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');                menuOverlay.classList.remove('open');
             });
 
             // 2. Side Effects Toggle Logic
@@ -397,22 +743,24 @@
             const viewLong = document.getElementById('view-long-term');
 
             btnShort.addEventListener('click', () => {
-                btnShort.classList.replace('bg-stone-200', 'bg-amber-500');
-                btnShort.classList.replace('text-stone-600', 'text-white');
+                btnShort.classList.add('active-short');
+                btnShort.classList.remove('bg-stone-200', 'text-stone-600');
+                btnShort.classList.add('text-white');
                 
-                btnLong.classList.replace('bg-rose-600', 'bg-stone-200');
-                btnLong.classList.replace('text-white', 'text-stone-600');
+                btnLong.classList.remove('active-long', 'text-white');
+                btnLong.classList.add('bg-stone-200', 'text-stone-600');
 
                 viewShort.classList.remove('hidden');
                 viewLong.classList.add('hidden');
             });
 
             btnLong.addEventListener('click', () => {
-                btnLong.classList.replace('bg-stone-200', 'bg-rose-600');
-                btnLong.classList.replace('text-stone-600', 'text-white');
+                btnLong.classList.add('active-long');
+                btnLong.classList.remove('bg-stone-200', 'text-stone-600');
+                btnLong.classList.add('text-white');
                 
-                btnShort.classList.replace('bg-amber-500', 'bg-stone-200');
-                btnShort.classList.replace('text-white', 'text-stone-600');
+                btnShort.classList.remove('active-short', 'text-white');
+                btnShort.classList.add('bg-stone-200', 'text-stone-600');
 
                 viewLong.classList.remove('hidden');
                 viewShort.classList.add('hidden');
@@ -424,36 +772,44 @@
             function initChart() {
                 const ctx = document.getElementById('weightLossChart').getContext('2d');
                 
-                // Styling defaults for RTL and Font
                 Chart.defaults.font.family = "'Vazirmatn', sans-serif";
-                Chart.defaults.color = '#57534e'; // stone-600
+                Chart.defaults.color = '#57534e';
+                
+                // Create gradient
+                const gradient = ctx.createLinearGradient(0, 0, 0, 350);
+                gradient.addColorStop(0, 'rgba(20, 184, 166, 0.3)');
+                gradient.addColorStop(1, 'rgba(20, 184, 166, 0.0)');
                 
                 new Chart(ctx, {
                     type: 'line',
-                    data: {
-                        labels: ['هفته ۰', 'ماه ۱', 'ماه ۲', 'ماه ۳', 'ماه ۴', 'ماه ۵', 'ماه ۶ (پایان)'],
+                    data: {                        labels: ['هفته ۰', 'ماه ۱', 'ماه ۲', 'ماه ۳', 'ماه ۴', 'ماه ۵', 'ماه ۶'],
                         datasets: [
                             {
-                                label: 'کاهش وزن با رژیم و ورزش (کیلوگرم)',
+                                label: 'مسیر ایده‌آل (کیلوگرم)',
                                 data: [0, -3.5, -6.5, -9.5, -12, -13.5, -15],
-                                borderColor: '#14b8a6', // teal-500
-                                backgroundColor: 'rgba(20, 184, 166, 0.2)',
+                                borderColor: '#14b8a6',
+                                backgroundColor: gradient,
                                 borderWidth: 3,
                                 pointBackgroundColor: '#0f766e',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
                                 pointRadius: 5,
-                                pointHoverRadius: 7,
+                                pointHoverRadius: 8,
                                 fill: true,
                                 tension: 0.4
                             },
                             {
-                                label: 'دارو بدون تغییر سبک زندگی (کیلوگرم)',
+                                label: 'دارو بدون تغییر سبک زندگی',
                                 data: [0, -2.5, -4.5, -6.5, -8, -9, -9.5],
-                                borderColor: '#fb7185', // rose-400
+                                borderColor: '#fb7185',
                                 backgroundColor: 'transparent',
                                 borderWidth: 2,
-                                borderDash: [5, 5],
+                                borderDash: [8, 4],
                                 pointBackgroundColor: '#e11d48',
+                                pointBorderColor: '#fff',
+                                pointBorderWidth: 2,
                                 pointRadius: 4,
+                                pointHoverRadius: 6,
                                 fill: false,
                                 tension: 0.4
                             }
@@ -461,30 +817,29 @@
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false, // Required to fit the chart-container height
-                        interaction: {
-                            mode: 'index',
-                            intersect: false,
-                        },
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
                         plugins: {
                             legend: {
                                 position: 'top',
                                 rtl: true,
                                 labels: {
-                                    font: { family: "'Vazirmatn', sans-serif", size: 13 }
+                                    font: { family: "'Vazirmatn', sans-serif", size: 12 },
+                                    usePointStyle: true,
+                                    padding: 15
                                 }
                             },
                             tooltip: {
                                 rtl: true,
-                                titleFont: { family: "'Vazirmatn', sans-serif", size: 14 },
-                                bodyFont: { family: "'Vazirmatn', sans-serif", size: 13 },
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',                                titleFont: { family: "'Vazirmatn', sans-serif", size: 13 },
+                                bodyFont: { family: "'Vazirmatn', sans-serif", size: 12 },
+                                padding: 12,
+                                cornerRadius: 10,
                                 callbacks: {
                                     label: function(context) {
                                         let label = context.dataset.label || '';
-                                        if (label) { label += ': '; }
-                                        if (context.parsed.y !== null) {
-                                            label += context.parsed.y + ' کیلو';
-                                        }
+                                        if (label) label += ': ';
+                                        if (context.parsed.y !== null) label += context.parsed.y + ' کیلو';
                                         return label;
                                     }
                                 }
@@ -492,16 +847,13 @@
                         },
                         scales: {
                             y: {
-                                title: {
-                                    display: true,
-                                    text: 'تغییرات وزن (کیلوگرم)',
-                                    font: { size: 12 }
-                                },
-                                min: -18,
-                                max: 2
+                                title: { display: true, text: 'تغییرات وزن (کیلوگرم)', font: { size: 11 } },
+                                min: -18, max: 2,
+                                grid: { color: 'rgba(0,0,0,0.05)' }
                             },
                             x: {
-                                grid: { display: false }
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }
                             }
                         }
                     }
@@ -510,30 +862,32 @@
 
             // 4. Success Plan Interactive Checklist
             const checklistItems = [
-                { id: 1, icon: '🥩', title: 'مصرف پروتئین بالا', desc: 'تعهد می‌دهم روزانه ۱.۲ تا ۱.۵ گرم به ازای هر کیلو از وزن بدنم پروتئین (تخم مرغ، مرغ، ماهی، گوشت) مصرف کنم تا در حین کاهش وزن، عضلاتم را از دست ندهم (سارکوپنی رخ ندهد).' },
-                { id: 2, icon: '🏋️‍♂️', title: 'تمرینات قدرتی', desc: 'تعهد می‌دهم حداقل هفته‌ای ۲ الی ۳ جلسه تمرین با وزنه یا وزن بدن (مثل شنا، اسکات) انجام دهم. این کلید اصلی حفظ متابولیسم است.' },
-                { id: 3, icon: '💧', title: 'آبرسانی پیوسته', desc: 'دارو باعث کاهش احساس تشنگی می‌شود. تعهد می‌دهم روزانه حداقل ۸-۱۰ لیوان آب بنوشم. این کار از یبوست و تهوع به شدت جلوگیری می‌کند.' },
-                { id: 4, icon: '🍽️', title: 'مدیریت حجم وعده‌ها', desc: 'دارو معده را کند می‌کند. تعهد می‌دهم به محض احساس اولین سیگنال‌های سیری، غذا خوردن را متوقف کنم تا دچار رفلاکس و استفراغ نشوم.' },
-                { id: 5, icon: '🩺', title: 'نظارت پزشکی', desc: 'تعهد می‌دهم دارو را خودسرانه دوزبندی نکنم، حتماً از دوز پایین (۲.۵ میلی‌گرم) شروع کنم و ماهانه زیر نظر پزشک دوز را تغییر دهم.' }
+                { id: 1, icon: '🥩', title: 'مصرف پروتئین بالا', desc: 'تعهد می‌دهم روزانه ۱.۲ تا ۱.۵ گرم به ازای هر کیلو وزن بدن پروتئین مصرف کنم تا عضلاتم حفظ شود.' },
+                { id: 2, icon: '🏋️‍♂️', title: 'تمرینات قدرتی', desc: 'تعهد می‌دهم حداقل هفته‌ای ۲ الی ۳ جلسه تمرین با وزنه یا وزن بدن انجام دهم.' },
+                { id: 3, icon: '💧', title: 'آبرسانی پیوسته', desc: 'تعهد می‌دهم روزانه حداقل ۸-۱۰ لیوان آب بنوشم تا از یبوست و تهوع جلوگیری شود.' },
+                { id: 4, icon: '🍽️', title: 'مدیریت حجم وعده‌ها', desc: 'تعهد می‌دهم به محض احساس سیری، غذا خوردن را متوقف کنم تا دچار رفلاکس نشوم.' },
+                { id: 5, icon: '🩺', title: 'نظارت پزشکی', desc: 'تعهد می‌دهم دارو را خودسرانه دوزبندی نکنم و از دوز ۲.۵ میلی‌گرم شروع کنم.' }
             ];
 
             const checklistContainer = document.getElementById('checklist');
             const readinessScoreEl = document.getElementById('readiness-score');
             const readinessBarEl = document.getElementById('readiness-bar');
+            const progressTextEl = document.getElementById('progress-text');
+            const fabIcon = document.getElementById('fab-icon');
             let completedItems = 0;
 
-            // Render Checklist
             checklistItems.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'checklist-item p-4 border border-stone-200 rounded-lg cursor-pointer hover:bg-stone-50 flex items-start gap-4 transition-colors';
+                div.className = 'checklist-item glass-card p-4 rounded-2xl cursor-pointer flex items-start gap-3 md:gap-4 border border-stone-200';
                 div.innerHTML = `
-                    <div class="text-2xl mt-1">${item.icon}</div>
-                    <div class="flex-1">
-                        <h4 class="font-bold mb-1 select-none">${item.title}</h4>
-                        <p class="text-sm select-none">${item.desc}</p>
+                    <div class="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br from-teal-100 to-teal-50 rounded-2xl flex items-center justify-center flex-shrink-0 text-2xl md:text-3xl">                        ${item.icon}
                     </div>
-                    <div class="checkbox-ui w-6 h-6 rounded border-2 border-teal-500 flex items-center justify-center mt-2 flex-shrink-0">
-                        <span class="text-teal-600 hidden opacity-0 transition-opacity">✔</span>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-sm md:text-base mb-1 select-none">${item.title}</h4>
+                        <p class="text-xs md:text-sm text-stone-600 select-none">${item.desc}</p>
+                    </div>
+                    <div class="checkbox-ui w-7 h-7 md:w-8 md:h-8 rounded-xl border-2 border-teal-400 flex items-center justify-center flex-shrink-0 mt-1 transition-all">
+                        <span class="text-teal-600 hidden opacity-0 transition-all text-lg font-bold">✓</span>
                     </div>
                 `;
                 
@@ -546,12 +900,16 @@
                         completedItems++;
                         checkMark.classList.remove('hidden');
                         setTimeout(() => checkMark.classList.remove('opacity-0'), 10);
-                        boxUI.classList.add('bg-teal-100');
+                        boxUI.classList.add('bg-teal-500', 'border-teal-500');
+                        boxUI.classList.remove('border-teal-400');
+                        checkMark.classList.add('text-white');
                     } else {
                         completedItems--;
                         checkMark.classList.add('opacity-0');
                         setTimeout(() => checkMark.classList.add('hidden'), 300);
-                        boxUI.classList.remove('bg-teal-100');
+                        boxUI.classList.remove('bg-teal-500', 'border-teal-500');
+                        boxUI.classList.add('border-teal-400');
+                        checkMark.classList.remove('text-white');
                     }
                     updateReadiness();
                 });
@@ -563,17 +921,47 @@
                 const percentage = Math.round((completedItems / checklistItems.length) * 100);
                 readinessScoreEl.innerText = `${percentage}٪`;
                 readinessBarEl.style.width = `${percentage}%`;
+                progressTextEl.innerText = `${completedItems} از ${checklistItems.length} مورد`;
+                fabIcon.innerText = `${percentage}٪`;
                 
                 if(percentage === 100) {
                     readinessScoreEl.classList.add('text-green-600');
                     readinessScoreEl.classList.remove('text-teal-600');
-                    readinessBarEl.classList.replace('bg-teal-600', 'bg-green-500');
+                    readinessBarEl.classList.remove('from-teal-500', 'to-emerald-500');
+                    readinessBarEl.classList.add('from-green-500', 'to-emerald-400');
+                    document.getElementById('fab-btn').classList.remove('from-teal-500', 'to-teal-700');                    document.getElementById('fab-btn').classList.add('from-green-500', 'to-emerald-600');
+                    launchConfetti();
                 } else {
                     readinessScoreEl.classList.remove('text-green-600');
                     readinessScoreEl.classList.add('text-teal-600');
-                    readinessBarEl.classList.replace('bg-green-500', 'bg-teal-600');
+                    readinessBarEl.classList.add('from-teal-500', 'to-emerald-500');
+                    readinessBarEl.classList.remove('from-green-500', 'to-emerald-400');
+                    document.getElementById('fab-btn').classList.add('from-teal-500', 'to-teal-700');
+                    document.getElementById('fab-btn').classList.remove('from-green-500', 'to-emerald-600');
                 }
             }
+
+            // Confetti animation
+            function launchConfetti() {
+                const colors = ['#14b8a6', '#f59e0b', '#fb7185', '#8b5cf6', '#10b981'];
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'confetti-piece';
+                        confetti.style.left = Math.random() * 100 + 'vw';
+                        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                        confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                        confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                        document.body.appendChild(confetti);
+                        setTimeout(() => confetti.remove(), 4000);
+                    }, i * 30);
+                }
+            }
+
+            // FAB button click
+            document.getElementById('fab-btn').addEventListener('click', () => {
+                switchTab('success-plan');
+            });
         });
     </script>
 </body>
